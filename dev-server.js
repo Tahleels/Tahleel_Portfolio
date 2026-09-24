@@ -52,6 +52,23 @@ app.use(
   })
 );
 
-app.listen(PORT, () => {
+/* Environment is read once, at startup, by dotenv. Editing .env while
+   the server is running changes nothing until it restarts — which
+   looks exactly like "my new token doesn't work". So say out loud
+   what this process actually loaded. */
+function report() {
+  const tick = (ok) => (ok ? "ok  " : "MISSING");
+  const gh = !!process.env.GITHUB_TOKEN;
+  const smtp = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS", "CONTACT_TO"]
+    .filter((k) => !process.env[k]);
+
   console.log(`\n  Portfolio dev server → http://localhost:${PORT}\n`);
-});
+  console.log(`  [${tick(gh)}] GITHUB_TOKEN   ${gh ? "contribution graph + PR counts live" : "graph will be hidden; PR counts fall back to the public API"}`);
+  console.log(`  [${tick(!smtp.length)}] SMTP           ${smtp.length ? "contact form disabled — missing " + smtp.join(", ") : "contact form can send"}`);
+  if (process.env.SMTP_HOST && process.env.SMTP_HOST.includes("@")) {
+    console.log("  [warn]   SMTP_HOST looks like an email address; it must be a hostname (smtp.gmail.com)");
+  }
+  console.log("\n  Values are read at startup — restart after editing .env.\n");
+}
+
+app.listen(PORT, report);
