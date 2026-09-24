@@ -1,84 +1,114 @@
 # Tahleel Shaikh — Portfolio
 
-An editorial, brutalist-minimal portfolio for an AI Engineer / Agentic AI Developer. Static frontend (HTML/CSS/JS, no build step) + a small Express backend for the contact form and live GitHub stats.
+Static frontend served from the Vercel CDN, with two cache-first serverless endpoints. No build step, no framework.
 
-## Structure
+- **Design** — editorial black rail + off-white canvas, gold accent.
+- **Architecture** — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the HLD/LLD, the caching layers, and why each data structure was chosen.
 
 ```
-portfolio/
-├── index.html        ← all sections (Home, About, Experience, Projects, Open Source, Skills, Contact)
-├── styles.css         ← design system + responsive layout
-├── script.js          ← interactions, data, API calls
-└── backend/
-    ├── server.js      ← Express API (contact form + GitHub stats)
-    ├── package.json
-    └── .env.example
+.
+├── public/               ← everything the CDN serves
+│   ├── index.html        ← all three sections, static markup (no JS render)
+│   ├── styles.css        ← design tokens + measured responsive system
+│   ├── script.js         ← animations + GitHub stats
+│   ├── profile.jpeg
+│   └── TahleelShaikhResume.pdf
+├── api/                  ← Vercel serverless functions
+│   ├── github-stats.js   ← CDN-cached, single-flighted, stale-on-error
+│   ├── contact.js        ← token-bucket limited (currently unused by the UI)
+│   └── _lib/
+│       ├── cache.js      ← TTLCache (bounded LRU) + singleFlight + lastGood
+│       └── ratelimit.js  ← token bucket + client IP resolution
+├── dev-server.js         ← local only; mounts the SAME api/ handlers
+├── vercel.json           ← cache policy, security headers, CSP
+└── docs/ARCHITECTURE.md
 ```
 
-## 1. Personalize the content
-
-- **Photo**: replace the `.avatar-photo` block in `index.html` with a real `<img>` if you have a headshot.
-- **Resume**: drop a `resume.pdf` next to `index.html` (the Download Resume button already links to `/resume.pdf`).
-- **Projects / Skills / Certifications**: edit the `PROJECTS`, `SKILLS`, `CERTS` arrays at the top of `script.js`.
-- **Links**: update GitHub/LinkedIn/X/email URLs in `index.html` (sidebar + Contact section) and `GITHUB_USERNAME` in `script.js`.
-
-## 2. Run the frontend
-
-It's static — no build step required.
+## Run locally
 
 ```bash
-# from the portfolio/ folder
-npx serve .
-```
-
-Deploy `index.html`, `styles.css`, `script.js` (and `resume.pdf`) to any static host: Vercel, Netlify, Cloudflare Pages, GitHub Pages.
-
-## 3. Run the backend
-
-The backend does two things a static site can't do safely:
-
-1. **Contact form** — receives submissions and emails you via SMTP (Nodemailer). Keeps your SMTP credentials off the client.
-2. **Live GitHub stats** — calls GitHub's GraphQL + Search APIs with a personal access token to get real merged/open/closed PR counts and your contribution calendar. This requires a token, so it must run server-side — a token in frontend JS would be public.
-
-```bash
-cd backend
-cp .env.example .env   # fill in SMTP + GitHub credentials
 npm install
-npm start               # runs on http://localhost:4000
+cp .env.example .env     # fill in GITHUB_TOKEN
+npm run dev              # http://localhost:4000
 ```
 
-Deploy the backend to Render, Railway, Fly.io, or any Node host. Then in `script.js`, set:
+`dev-server.js` does **not** reimplement the API. Express satisfies the same handler signature Vercel uses (`req.method` / `req.query` / `req.body`, `res.status().json()`), so `api/github-stats.js` and `api/contact.js` are mounted verbatim — one implementation, two runtimes, no drift between local and production.
 
-```js
-const API_BASE = "https://your-backend-url.com";
+## Deploy to Vercel
+
+```bash
+npm i -g vercel
+vercel                   # preview
+vercel --prod            # production
 ```
 
-(or set `window.PORTFOLIO_API_BASE` before `script.js` loads, e.g. in an inline `<script>` tag, so you don't need to edit the file per-environment).
+Or connect the GitHub repo at [vercel.com/new](https://vercel.com/new) — it auto-deploys on push to `main`. `vercel.json` already sets `outputDirectory: public`, so no build settings are needed.
 
-### Environment variables (`backend/.env`)
+### Environment variables
 
-| Variable | Purpose |
+Set these in **Project Settings → Environment Variables** (never in the repo):
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `GITHUB_TOKEN` | yes | Fine-grained PAT, **read-only, no scopes**. Powers live PR counts + the contribution calendar. |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | **yes** | Mailbox the contact form sends through. `SMTP_HOST` is a hostname (`smtp.gmail.com`), not your address. Gmail: use an App Password with the spaces stripped. |
+| `CONTACT_TO` | **yes** | Where contact-form messages land. |
+
+Without `GITHUB_TOKEN` the page still works — the client falls back to GitHub's public search API for PR counts. Only the contribution calendar needs the token.
+
+### Custom domain
+
+Add it under **Project Settings → Domains**, then update the four hardcoded `https://tahleelshaikh.dev/` references in `public/index.html` (canonical, `og:url`, `og:image`, `twitter:image`) and the one in `public/sitemap.xml` and `public/robots.txt`.
+
+## Endpoints
+
+| Endpoint | Cache | Notes |
+|---|---|---|
+| `GET /api/github-stats?user=<login>` | `s-maxage=600`, SWR 24h | `X-Cache: HIT \| MISS \| STALE` tells you which layer answered |
+| `POST /api/contact` | `no-store` | Backs the contact form. 8-request burst, refilling over 15 min, per IP, plus a honeypot field |
+| `GET /health` | — | local dev server only |
+
+## Editing content
+
+Everything is static markup — there is no data file to regenerate.
+
+| What | Where |
 |---|---|
-| `PORT` | Port the API listens on |
-| `ALLOWED_ORIGIN` | Your deployed frontend origin, for CORS |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | Mailbox used to send contact-form emails (use an app password, not your real password) |
-| `CONTACT_TO` | Where contact-form messages land |
-| `GITHUB_TOKEN` | Fine-grained PAT, read-only, used to pull real PR/contribution data |
+| Projects | the six `<article class="project-card">` blocks in `index.html` |
+| Experience | the two `<div class="exp">` blocks |
+| Education / Topmate | the two `<div class="home-col">` blocks |
+| Social links | sidebar `.sb-social` **and** contact `.contact-right` |
+| Colours, spacing, type | the `:root` token block at the top of `styles.css` |
 
-### Endpoints
+## ⚠️ If you edit the inline `<script>` in index.html
 
-- `POST /api/contact` — `{ name, email, message }` → sends an email, rate-limited to 8 requests / 15 min per IP.
-- `GET /api/github-stats?user=<login>` — returns `{ repos, stars, merged, open, closed, calendar }`, cached 10 minutes server-side.
-- `GET /health` — uptime check.
+The CSP whitelists it by hash. Change it and the page stops working until you regenerate:
 
-If the backend is unreachable, the frontend gracefully falls back to GitHub's public REST API (repo count + star count only — no PR breakdown, no token needed) so the page never looks broken.
+```bash
+node -e "const f=require('fs'),c=require('crypto');const m=f.readFileSync('public/index.html','utf8').match(/<script>([\s\S]*?)<\/script>/);console.log('sha256-'+c.createHash('sha256').update(m[1],'utf8').digest('base64'))"
+```
 
-## 4. Design tokens
+Paste the result into the `Content-Security-Policy` value in `vercel.json`.
 
-All colors, type and spacing live as CSS variables at the top of `styles.css` — change the palette or scale globally from one place.
+## Responsive contract
 
-## Notes
+Breakpoints were measured from reference screenshots, not guessed.
 
-- No internal scroll containers — the whole site is one continuously scrollable document, per the brief.
-- Reduced-motion users get all transitions/animations disabled automatically (`prefers-reduced-motion`).
-- Mobile sidebar collapses into a top profile block; tablet gets a slide-out drawer triggered by the top-right menu button.
+| Width | Behaviour |
+|---|---|
+| ≥ 1600px | Rail 400px (capped); content wrapper capped at 1500px |
+| 1281–1599px | Rail `20.5vw`; gutter `4vw`; display type `14.5%` of content width |
+| 1201–1280px | Rail narrows to `clamp(272px, 25vw, 330px)`; display type `15.5%` |
+| 901–1200px | Rail still fixed, but project/contact grids drop to one column before the cards squash |
+| ≤ 900px | **Rail unpins** into a static stacked block — no drawer, no hamburger. Photo 55% @ 3:2, nav card capped at 260px, gutter 24px |
+| ≤ 560px | Stat cards tighten, project padding reduces, buttons go full-width |
+| ≤ 380px | Gutter 18px, stat numbers step down |
+| **≤ 720px tall** | Short-screen mode: band and rhythm tighten, lede runs wider (fewer lines, same size) so Home still fits a 1366×768 laptop's ~625px real viewport |
+
+Every section is a **frame**: `min-height: 100dvh`, its own background, and a sticky full-bleed wordmark pinned to the top — so clicking home/work/contact always lands on a composed view.
+
+Sizing answers to **both axes**. Display type is `min(14.5% of the content column, 23vh)` and vertical rhythm is `clamp(min, min(Xvw, Yvh), max)`, so a short laptop (1366×768) compresses rather than overflowing. Verified framing on 1366×768, 1440×900, 1536×864, 1920×1080, 1280×800, 1024×768, 820×1180, 430×932, 393×852 and 360×640.
+
+## Accessibility
+
+Skip link, visible focus rings, `prefers-reduced-motion` disables every animation, all icon-only controls carry `aria-label`, contribution graph is `role="img"` with a label, and the page is fully readable with JavaScript disabled.

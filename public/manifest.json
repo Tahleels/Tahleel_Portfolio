@@ -1,0 +1,13 @@
+{
+  "name": "Tahleel Shaikh — AI/ML Software Engineer",
+  "short_name": "Tahleel Shaikh",
+  "description": "Portfolio of Tahleel Shaikh — AI/ML Software Engineer building production-grade LLM systems.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EFEDE8",
+  "theme_color": "#050505",
+  "lang": "en",
+  "icons": [
+    { "src": "/profile.jpeg", "sizes": "1080x1068", "type": "image/jpeg", "purpose": "any" }
+  ]
+}
