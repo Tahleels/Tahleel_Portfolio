@@ -287,9 +287,10 @@ body.cursor-live .cursor-ring{opacity:1;}
 
 /* ------------------------------------------------------------
    THE DISPLAY WORD
-   Pinned to the top of its own section and full-bleed on the
-   section background, so content scrolls beneath an opaque band
-   rather than colliding with the letterforms.
+   Sits in normal flow at the top of its section, transparent —
+   no painted background, so the section's own colour (and the
+   drifting mesh gradient behind it in Home) shows straight through
+   instead of a flat rectangle sitting on top of it.
 
    Size is min(width term, height term): the width term keeps the
    reference proportion (14.5% of the content column), the height
@@ -297,10 +298,8 @@ body.cursor-live .cursor-ring{opacity:1;}
    smaller wins, so it fits BOTH axes on every device.
 ------------------------------------------------------------ */
 .display-xl{
-  position:sticky;top:0;z-index:3;
-  margin-inline:calc(var(--gutter) * -1);
-  padding:clamp(34px,7vh,92px) var(--gutter) clamp(10px,2vh,26px);
-  background:var(--sec-bg);
+  margin-top:clamp(34px,7vh,92px);
+  margin-bottom:clamp(10px,2vh,26px);
   font-family:var(--font-display);
   font-size:clamp(44px, min(calc(var(--content-w) * var(--display-scale)), 23vh), 250px);
   line-height:.86;
@@ -751,7 +750,7 @@ body.cursor-live .cursor-ring{opacity:1;}
   .section--home{min-height:0;}
   .section--home .wrap{padding-bottom:52px;}
   .wrap{padding:0 24px 56px;}
-  .display-xl{padding:38px 24px 12px;}
+  .display-xl{margin-top:38px;margin-bottom:12px;}
 
   .vert-mark{display:none;}
   .theme-toggle{top:auto;bottom:20px;right:20px;
@@ -780,7 +779,7 @@ body.cursor-live .cursor-ring{opacity:1;}
 ============================================================ */
 @media (max-width:560px){
   .wrap{padding:0 24px 52px;}
-  .display-xl{padding:34px 24px 10px;}
+  .display-xl{margin-top:34px;margin-bottom:10px;}
 
   .gh-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
   .gh-card{padding:18px 14px;gap:6px;}
@@ -808,7 +807,7 @@ body.cursor-live .cursor-ring{opacity:1;}
   :root{--gutter:18px;}
   .sidebar{padding:28px 18px 24px;}
   .wrap{padding:0 18px 48px;}
-  .display-xl{padding:30px 18px 8px;}
+  .display-xl{margin-top:30px;margin-bottom:8px;}
   .gh-card{padding:16px 10px;}
   .gh-num{font-size:29px;}
   .gh-label{font-size:9px;}
@@ -826,8 +825,8 @@ body.cursor-live .cursor-ring{opacity:1;}
 ============================================================ */
 @media (min-width:901px) and (max-height:780px){
   .display-xl{
-    padding-top:clamp(18px,4vh,42px);
-    padding-bottom:8px;
+    margin-top:clamp(18px,4vh,42px);
+    margin-bottom:8px;
   }
   .lede{max-width:46ch;margin-top:clamp(10px,2vh,18px);}
   .home-cols{padding-top:clamp(18px,3.5vh,44px);}
