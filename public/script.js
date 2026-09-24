@@ -168,7 +168,7 @@
 
   /* Fire the count only once the card is actually on screen. */
   function countWhenVisible(el, value) {
-    if (typeof value !== "number") { el.textContent = "—"; return; }
+    if (typeof value !== "number") { el.textContent = "···"; return; }
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
         if (!e.isIntersecting) return;
@@ -247,7 +247,7 @@
         if (d.weeks && d.weeks.length) {
           renderGraph(d.weeks, d.months);
           ghNote.textContent = d.stale
-            ? "Showing the last good snapshot — GitHub is slow right now."
+            ? "Showing the last good snapshot. GitHub is slow right now."
             : "Live from the GitHub API.";
         } else {
           hideGraphPlot();
@@ -271,7 +271,7 @@
               closed: res[2].total_count
             });
             hideGraphPlot();
-            ghNote.textContent = "Live from GitHub's public API — contribution calendar needs the server token.";
+            ghNote.textContent = "Live from GitHub's public API. The contribution calendar needs the server token.";
           })
           .catch(function () {
             hideGraphPlot();
@@ -356,7 +356,7 @@
         .then(function (res) {
           if (res.ok) {
             form.reset();
-            say("Sent — I'll get back to you soon.", "ok");
+            say("Sent. I'll get back to you soon.", "ok");
             return;
           }
           if (res.status === 429) {
