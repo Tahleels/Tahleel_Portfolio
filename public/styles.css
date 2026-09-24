@@ -225,7 +225,14 @@ body.cursor-live .cursor-ring{opacity:1;}
 .nav-link.is-active .nav-dot{background:var(--gold);}
 .nav-link.is-active .nav-idx{color:var(--gold);}
 
-.sb-foot{margin-top:auto;}
+/* Previously margin-top:auto, which stretched this all the way to
+   the sidebar's bottom edge -- leaving a huge dead gap between the
+   nav card and "let's connect" that read as the whole sidebar being
+   stuck at the top ("attached to the ceiling"). The reference lets
+   it sit close under the nav with the same small rhythm as every
+   other gap in the sidebar (the parent's flex `gap:22px` already
+   does that on its own), and simply leaves the leftover space
+   below it empty and unclaimed. */
 .sb-connect{
   font-family:var(--font-ui);font-size:13.5px;font-weight:700;
   color:#FFF;margin-bottom:16px;
