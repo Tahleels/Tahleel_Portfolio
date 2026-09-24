@@ -262,7 +262,7 @@ body.cursor-live .cursor-ring{opacity:1;}
   display:flex;flex-direction:column;
 }
 .section--home{--sec-bg:var(--bg-secondary);background:var(--bg-secondary);overflow:hidden;}
-.section--home .wrap{padding-bottom:clamp(40px, 7vh, 110px);}
+.section--home .wrap{padding-bottom:clamp(12px, 4vh, 110px);}
 .section--work{--sec-bg:var(--bg-section);background:var(--bg-section);}
 .section--contact{--sec-bg:var(--bg-secondary);background:var(--bg-secondary);}
 
@@ -332,7 +332,11 @@ body.cursor-live .cursor-ring{opacity:1;}
    HOME
 ============================================================ */
 .lede{
-  margin-top:clamp(18px, min(3.4vw,4vh), 52px);
+  /* Matched to the reference's measured rhythm: heading-to-lede
+     gap there is ~18% of viewport height, not ~6% like the old
+     value here. This was the actual "bad alignment" complaint --
+     not left/right, but everything crammed too close vertically. */
+  margin-top:clamp(24px, min(5.5vw,9vh), 100px);
   font-family:var(--font-mono);
   font-size:clamp(17px, min(calc(var(--content-w) * 0.023), 4.1vh), 38px);
   line-height:1.62;letter-spacing:-.01em;
@@ -349,7 +353,9 @@ body.cursor-live .cursor-ring{opacity:1;}
   row-gap:44px;
   align-items:start;
   margin-top:auto;
-  padding-top:clamp(32px, min(6vw,8vh), 96px);
+  /* same reference measurement: lede-to-next-section gap there is
+     ~24% of viewport height, not ~7% like the old value. */
+  padding-top:clamp(28px, min(6.5vw,9.8vh), 115px);
 }
 .home-col .eyebrow{margin-bottom:14px;}
 
@@ -404,20 +410,9 @@ body.cursor-live .cursor-ring{opacity:1;}
   letter-spacing:.11em;padding:14px 26px;border-radius:100px;
 }
 
-.scroll-cue{
-  position:absolute;bottom:32px;left:var(--gutter);z-index:2;
-  display:flex;align-items:center;gap:10px;
-  font-family:var(--font-mono);font-size:11px;
-  letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);
-}
-.scroll-cue span{
-  width:1px;height:30px;background:var(--text-muted);
-  animation:scrollCue 1.8s ease-in-out infinite;
-}
-@keyframes scrollCue{
-  0%,100%{transform:scaleY(1);opacity:.5;}
-  50%{transform:scaleY(.4);opacity:1;}
-}
+/* .scroll-cue removed: Home now fills the frame with no room
+   left at the bottom for it, matching the reference (which has
+   no scroll indicator either). */
 
 /* ============================================================
    PROJECTS
@@ -770,7 +765,6 @@ body.cursor-live .cursor-ring{opacity:1;}
   .cf-actions .btn{flex:1 1 auto;justify-content:center;}
   .contact-statement{max-width:none;font-size:clamp(23px,6.6vw,32px);}
 
-  .scroll-cue{display:none;}
   .gh-graph-inner{min-width:620px;}
 }
 
@@ -836,7 +830,6 @@ body.cursor-live .cursor-ring{opacity:1;}
   .home-col .eyebrow{margin-bottom:10px;}
   .col-desc{margin-top:8px;}
   .btn-row{margin-top:16px;}
-  .scroll-cue{display:none;}
 }
 
 /* Very short (a 1280x600-class window): drop the wordmark further
