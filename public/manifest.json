@@ -8,6 +8,7 @@
   "theme_color": "#050505",
   "lang": "en",
   "icons": [
-    { "src": "/profile.jpeg", "sizes": "1080x1068", "type": "image/jpeg", "purpose": "any" }
+    { "src": "/favicon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "maskable" }
   ]
 }
