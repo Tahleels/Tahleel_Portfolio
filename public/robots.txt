@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://tahleelshaikh.dev/sitemap.xml
+Sitemap: https://tahleel-portfolio.vercel.app/sitemap.xml
